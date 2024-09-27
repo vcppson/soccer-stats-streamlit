@@ -203,8 +203,15 @@ def display_statistics(statistics, prob_table):
     st.table(prob_table)
 
 def calculate_most_frequent_results(df, team_a, team_b, top_n_results):
-    matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
-                 ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
+    if team_a == None:
+        matches = df[(df["Home"] == team_b) |
+                    (df["Away"] == team_b)].copy()    
+    elif team_b == None:
+        matches = df[(df["Home"] == team_a) |
+                    (df["Away"] == team_a)].copy()    
+    else:
+        matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
+                    ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
 
     matches['TeamA'] = matches.apply(lambda row: team_a if row['Home'] == team_a or row['Away'] == team_a else team_b, axis=1)
     matches['TeamB'] = matches.apply(lambda row: team_b if row['TeamA'] == team_a else team_a, axis=1)
