@@ -99,8 +99,16 @@ def plot_secondary_stats(season_stats):
     st.pyplot(fig)
 
 def calculate_season_stats(df, team_a, team_b, goal_threshold, team_goal_threshold):
-    matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
-                 ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
+    
+    if team_a == None:
+        matches = df[(df["Home"] == team_b) |
+                    (df["Away"] == team_b)].copy()    
+    elif team_b == None:
+        matches = df[(df["Home"] == team_a) |
+                    (df["Away"] == team_a)].copy()    
+    else:
+        matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
+                    ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
 
     matches['TeamA'] = matches.apply(lambda row: team_a if row['Home'] == team_a or row['Away'] == team_a else team_b, axis=1)
     matches['TeamB'] = matches.apply(lambda row: team_b if row['TeamA'] == team_a else team_a, axis=1)
@@ -240,8 +248,8 @@ df = parse_match_data(df)
 st.subheader("Select Teams")
 teams = sorted(pd.concat([df["Home"], df["Away"]]).unique())
 
-team_a = st.selectbox("Select Team A", teams)
-team_b = st.selectbox("Select Team B", teams)
+team_a = st.selectbox("Select Team A", [None, *teams])
+team_b = st.selectbox("Select Team B", [None, *teams])
 
 # Select seasons range
 st.subheader("Select Season Range")
