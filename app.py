@@ -189,6 +189,23 @@ def calculate_season_stats(df, team_a, team_b, goal_threshold, team_goal_thresho
         "prob_team_b_goals_below_threshold": len(matches[matches['GoalsB'] < team_goal_threshold]) / total_matches * 100,
     }, prob_table
 
+def filter_prob_table(prob_table, threshold):
+    # Filter the table by comparing the probability values in the cells
+    # The cell format is "odds | probability%", so we extract the probability part and compare.
+    filtered_table = prob_table.copy()
+    for index, row in filtered_table.iterrows():
+        for col in row.index:
+            if filtered_table.loc[index, col]:
+                try:
+                    # Extract the probability part from "odds | probability%"
+                    prob_str = filtered_table.loc[index, col].split("|")[1].strip()[:-1]
+                    prob = float(prob_str)
+                    if prob < threshold:
+                        filtered_table.loc[index, col] = ""
+                except (IndexError, ValueError):
+                    # Handle cases where the cell doesn't contain valid data
+                    filtered_table.loc[index, col] = ""
+    return filtered_table
 
 def display_statistics(statistics, prob_table):
     if len(statistics) <= 0:
@@ -199,8 +216,14 @@ def display_statistics(statistics, prob_table):
     
     st.write(f"**Total Matches:** {statistics['total_matches']}")
 
-    st.write("#### Cross-Condition Probability Table")
-    st.table(prob_table)
+    # Input to set the probability threshold
+    prob_threshold = st.number_input("Show cells with probability greater than (%)", min_value=0.0, max_value=100.0, value=10.0)
+
+    # Filter the probability table based on the threshold
+    filtered_prob_table = filter_prob_table(prob_table, prob_threshold)
+
+    st.write("#### Filtered Cross-Condition Probability Table")
+    st.table(filtered_prob_table)
 
 def calculate_most_frequent_results(df, team_a, team_b, top_n_results):
     if team_a == None:
