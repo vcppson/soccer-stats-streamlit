@@ -242,7 +242,7 @@ def display_statistics(statistics, prob_table):
     st.write("#### Filtered Cross-Condition Probability Table")
     st.table(filtered_prob_table)
 
-def calculate_most_frequent_results(input_matches, team_a, team_b, top_n_results):
+def calculate_most_frequent_results(input_matches, top_n_results):
     matches = input_matches.copy()
 
     matches['TeamA'] = matches.apply(lambda row: team_a if row['Home'] == team_a or row['Away'] == team_a else team_b, axis=1)
@@ -290,7 +290,7 @@ teams = sorted(pd.concat([df["Home"], df["Away"]]).unique())
 team_a = st.selectbox("Select Team A", [None, *teams])
 team_b = st.selectbox("Select Team B", [None, *teams])
 
-home_away_match = st.checkbox("Home-Awawy Match")
+home_away_match = st.checkbox("Home-Away Match")
 
 # Select seasons range
 st.subheader("Select Season Range")
