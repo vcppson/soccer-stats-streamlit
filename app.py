@@ -123,18 +123,10 @@ def plot_secondary_stats(season_stats):
 
     st.pyplot(fig)
 
-def calculate_season_stats(df, team_a, team_b, goal_threshold, team_goal_threshold):
+def calculate_season_stats(input_matches, goal_threshold, team_goal_threshold):
     
-    if team_a == None:
-        matches = df[(df["Home"] == team_b) |
-                    (df["Away"] == team_b)].copy()    
-    elif team_b == None:
-        matches = df[(df["Home"] == team_a) |
-                    (df["Away"] == team_a)].copy()    
-    else:
-        matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
-                    ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
-
+    matches = input_matches.copy()
+    
     matches['TeamA'] = matches.apply(lambda row: team_a if row['Home'] == team_a or row['Away'] == team_a else team_b, axis=1)
     matches['TeamB'] = matches.apply(lambda row: team_b if row['TeamA'] == team_a else team_a, axis=1)
     matches['GoalsA'] = matches.apply(lambda row: row['HomeGoals'] if row['TeamA'] == row['Home'] else row['AwayGoals'], axis=1)
@@ -250,16 +242,8 @@ def display_statistics(statistics, prob_table):
     st.write("#### Filtered Cross-Condition Probability Table")
     st.table(filtered_prob_table)
 
-def calculate_most_frequent_results(df, team_a, team_b, top_n_results):
-    if team_a == None:
-        matches = df[(df["Home"] == team_b) |
-                    (df["Away"] == team_b)].copy()    
-    elif team_b == None:
-        matches = df[(df["Home"] == team_a) |
-                    (df["Away"] == team_a)].copy()    
-    else:
-        matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
-                    ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
+def calculate_most_frequent_results(input_matches, team_a, team_b, top_n_results):
+    matches = input_matches.copy()
 
     matches['TeamA'] = matches.apply(lambda row: team_a if row['Home'] == team_a or row['Away'] == team_a else team_b, axis=1)
     matches['TeamB'] = matches.apply(lambda row: team_b if row['TeamA'] == team_a else team_a, axis=1)
@@ -324,14 +308,15 @@ goal_threshold = st.number_input("Goal threshold", min_value=0.0, value=2.5, ste
 team_goal_threshold = st.number_input("Team Goal threshold", min_value=0.0, value=1.5, step=0.5)
 top_n_results = st.number_input("Top N results to display", min_value=1, value=10)
 
+matches = find_matches(df, team_a, team_b, home_away_match)
 
-statistics, prob_table = calculate_season_stats(df, team_a, team_b, goal_threshold, team_goal_threshold)
+statistics, prob_table = calculate_season_stats(matches, goal_threshold, team_goal_threshold)
 
 # Dynamically display the statistics
 display_statistics(statistics, prob_table)
 
 # Display the most frequent results
 st.subheader(f"Top {top_n_results} Most Frequent Results")
-most_frequent_results = calculate_most_frequent_results(df, team_a, team_b, top_n_results)
+most_frequent_results = calculate_most_frequent_results(matches, top_n_results)
 for result, count in most_frequent_results.items():
     st.write(f"Result: {result} | Frequency: {count}")
