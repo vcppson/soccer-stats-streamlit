@@ -47,8 +47,33 @@ def parse_match_data(df):
     
     return parsed_df
 
+def find_matches(df, team_a, team_b, home_away_match):
+    matches = []
+    
+    if home_away_match:
+        if team_a == None:
+            matches = df[df["Away"] == team_b].copy()    
+        elif team_b == None:
+            matches = df[df["Home"] == team_a].copy()    
+        else:
+            matches = df[(df["Home"] == team_a) & (df["Away"] == team_b)].copy()
+    else:
+        if team_a == None:
+            matches = df[(df["Home"] == team_b) |
+                        (df["Away"] == team_b)].copy()    
+        elif team_b == None:
+            matches = df[(df["Home"] == team_a) |
+                        (df["Away"] == team_a)].copy()    
+        else:
+            matches = df[((df["Home"] == team_a) & (df["Away"] == team_b)) |
+                        ((df["Home"] == team_b) & (df["Away"] == team_a))].copy()
+
+    return matches
+
 # Function to plot primary statistics
 def plot_primary_stats(season_stats):
+    
+    
     fig, ax = plt.subplots(1, 3, figsize=(18, 6))
 
     ax[0].plot(season_stats.index, season_stats["AllGoals"], label="All Goals", color="blue")
@@ -280,6 +305,8 @@ teams = sorted(pd.concat([df["Home"], df["Away"]]).unique())
 
 team_a = st.selectbox("Select Team A", [None, *teams])
 team_b = st.selectbox("Select Team B", [None, *teams])
+
+home_away_match = st.checkbox("Home-Awawy Match")
 
 # Select seasons range
 st.subheader("Select Season Range")
